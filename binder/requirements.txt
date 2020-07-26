@@ -5,3 +5,4 @@ wordcloud
 pandas
 wbdata
 bash_kernel
+git+https://github.com/mgeier/jupyter-format.git

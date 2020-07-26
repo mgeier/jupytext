@@ -39,6 +39,7 @@ from .myst import (
     myst_extensions,
     matches_mystnb,
 )
+from .jupyter_format_helper import is_jupyter_format_available, jupyter_format
 from .version import __version__
 
 
@@ -220,6 +221,18 @@ if is_myst_available():
             )
             for ext in myst_extensions()
         ]
+    )
+
+if is_jupyter_format_available():
+    JUPYTEXT_FORMATS.append(
+        NotebookFormatDescription(
+            format_name="jupyter-format",
+            extension=jupyter_format.SUFFIX,
+            header_prefix="",
+            cell_reader_class=None,
+            cell_exporter_class=None,
+            current_version_number=jupyter_format.__version__,
+        )
     )
 
 NOTEBOOK_EXTENSIONS = list(

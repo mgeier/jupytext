@@ -37,6 +37,14 @@ try:
 except jupytext.formats.JupytextFormatError as err:
     print(str(err))
 
+# Let's see if we have jupyter-format here
+try:
+    jupytext.writes(notebook, fmt='jupyter-format')
+    JUPYTEXT_FORMATS.append('jupyter-format')
+except jupytext.formats.JupytextFormatError as err:
+    print(str(err))
+
+
 # -
 
 

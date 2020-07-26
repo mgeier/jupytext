@@ -37,6 +37,7 @@ from .languages import (
 from .pep8 import pep8_lines_between_cells
 from .pandoc import md_to_notebook, notebook_to_md
 from .myst import myst_extensions, myst_to_notebook, notebook_to_myst, MYST_FORMAT_NAME
+from .jupyter_format_helper import jupyter_format
 
 
 class TextNotebookConverter(NotebookReader, NotebookWriter):
@@ -77,6 +78,9 @@ class TextNotebookConverter(NotebookReader, NotebookWriter):
 
         if self.fmt.get("format_name") == MYST_FORMAT_NAME:
             return myst_to_notebook(s)
+
+        if self.fmt.get("format_name") == "jupyter-format":
+            return jupyter_format.deserialize(s)
 
         lines = s.splitlines()
 
@@ -214,6 +218,40 @@ class TextNotebookConverter(NotebookReader, NotebookWriter):
                     cells=cells,
                 ),
                 default_lexer=pygments_lexer,
+            )
+
+        if self.fmt.get("format_name") == "jupyter-format":
+            metadata = insert_jupytext_info_and_filter_metadata(
+                metadata, self.ext, self.implementation
+            )
+
+            cells = []
+            for cell in nb.cells:
+                cell_metadata = filter_metadata(
+                    cell.metadata,
+                    self.fmt.get("cell_metadata_filter"),
+                    _IGNORE_CELL_METADATA,
+                )
+                if cell.cell_type == "code":
+                    cells.append(
+                        new_code_cell(source=cell.source, metadata=cell_metadata)
+                    )
+                else:
+                    cells.append(
+                        NotebookNode(
+                            source=cell.source,
+                            metadata=cell_metadata,
+                            cell_type=cell.cell_type,
+                        )
+                    )
+
+            return jupyter_format.serialize(
+                NotebookNode(
+                    nbformat=nb.nbformat,
+                    nbformat_minor=nb.nbformat_minor,
+                    metadata=metadata,
+                    cells=cells,
+                )
             )
 
         # Copy the notebook, in order to be sure we do not modify the original notebook
